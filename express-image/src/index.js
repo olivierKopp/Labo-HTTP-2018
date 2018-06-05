@@ -5,15 +5,21 @@ var express = require('express');
 var app = express();
 
 app.get('/', function(req, res) {
-	res.send(generateStudents());
+	res.send(generateAnimals());
 });
-
-/*
-app.get('/test', function(req, res) {
-	res.send("test");
-});
-*/
 
 app.listen(3000, function(){
 	console.log('Accepting HTTP request on port 3000')
 });
+
+function generateAnimals(){
+	var numberOfAnimals = 15;
+	var animals = [];
+	
+	for(var i = 0; i < numberOfAnimals; i++){
+		animals.push(chance.animal());
+	}
+	
+	console.log(animals);
+	return animals;
+}
