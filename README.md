@@ -1,28 +1,28 @@
 # Labo-HTTP-2018
-## Step 1 
+## Step 1
 In this step, we simply create a static http server from a model find on bootstrap. We simply modify and simplify the original html page for the lab.
 To build the container, we create a dockerfile that will inherit from php:7.0-apache and will copy our web page files to /var/www/html
 The apache config files in the container are located in /usr/local/apache2/conf/httpd.conf or /etc/apache2/apache2.conf
 By running the container with port mapping, we are able, at this stage, to see a static html page on our browser.
 
-## Step 2 
+## Step 2
 In this step, we've created a simple http server by using express.js. This server will return a list of random animal (using the module chance) after each GET request.
 To use it in docker, we had to create a dockerfile that inherit from the node8.11.2 image and that will simply copy all the server files in /opt/app.
 After building and running the image with the port mapping, we can see the json that contains random animals in the prompt (we can use telnet to do the GET request).
 
-## Step 3 
+## Step 3
 In this step, we've improved our infrastructure by adding a reverse proxy mechanism. This will allow us to request on both static and dynamic server without breaking the same origin policy.
 At first, we implemented it with hard-coded address in the site.conf file (/etc/apache2/sitesavailable). This is not really efficient because we have to make sure that our container will keep the same address all the time.
 We still can test it with telnet to see in which container the request that we write is redirected.
-To redirect request in the right server, we've used the proxy and proxy-http module and we've simplyy wrote the two following lines for each types of request : 
+To redirect request in the right server, we've used the proxy and proxy-http module and we've simplyy wrote the two following lines for each types of request :
 ProxyPass "TYPE_OF_THE_REQUEST" "DESTINATION"
 ProxyPassReverse "TYPE_OF_THE_REQUEST" "DESTINATION"
 the proxyPassReverse line is important to construct the response.
 
-## Step 4 
+## Step 4
+In this step, we added som Ajax and JQuery request to our infrastructure allowing our site to change every few seconds. We created a script and made the index.html call it. Every few seconds, this script create a list of animals and print one of them on the webpage.
 
-
-## Step 5 
+## Step 5
 In this step, we've improved the reverse proxy implemented in the third step to mske it a bit less static.
 To do so, we've modified the launch script of the apache-reverse-proxy image to create a dynamic conf files for the reverse proxy.
 This files need two environment variables that we have to add in argument of the run command.
