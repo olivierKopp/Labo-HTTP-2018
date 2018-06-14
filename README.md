@@ -1,48 +1,51 @@
-# Labo-HTTP-2018
+# Labo-HTTP-2018 
+
 ## Step 1 
-In this step, we simply create a static http server from a model find on bootstrap. We simply modify and simplify the original html page for the lab.
-To build the container, we create a dockerfile that will inherit from php:7.0-apache and will copy our web page files to /var/www/html
-The apache config files in the container are located in /usr/local/apache2/conf/httpd.conf or /etc/apache2/apache2.conf
-By running the container with port mapping, we are able, at this stage, to see a static html page on our browser.
+In this step, we simply create a static http server from a model find on bootstrap. We modify and simplify the original html page for the lab. 
+To build the container, we create a dockerfile that inherit from php:7.0-apache and copy our web page files to `/var/www/html`. 
+The apache config files in the container are located in `/usr/local/apache2/conf/httpd.conf` or `/etc/apache2/apache2.conf`. 
+By running the container with port mapping, we are able, at this stage, to see a static html page on our browser. 
 
 ## Step 2 
-In this step, we've created a simple http server by using express.js. This server will return a list of random animal (using the module chance) after each GET request.
-To use it in docker, we had to create a dockerfile that inherit from the node8.11.2 image and that will simply copy all the server files in /opt/app.
-After building and running the image with the port mapping, we can see the json that contains random animals in the prompt (we can use telnet to do the GET request).
+In this step, we create a simple http server by using express.js. 
+This server return a list of random animal (using the module chance) after each GET request. 
+To use it in docker, we had to create a dockerfile that inherit from the `node8.11.2` image and that copy all the server files in `/opt/app`. 
+After building and running the image with the port mapping, we can see the json that contains random animals in the prompt (we can use telnet to do the GET request). 
 
 ## Step 3 
-In this step, we've improved our infrastructure by adding a reverse proxy mechanism. This will allow us to request on both static and dynamic server without breaking the same origin policy.
-At first, we implemented it with hard-coded address in the site.conf file (/etc/apache2/sitesavailable). This is not really efficient because we have to make sure that our container will keep the same address all the time.
-We still can test it with telnet to see in which container the request that we write is redirected.
-To redirect request in the right server, we've used the proxy and proxy-http module and we've simplyy wrote the two following lines for each types of request : 
-ProxyPass "TYPE_OF_THE_REQUEST" "DESTINATION"
-ProxyPassReverse "TYPE_OF_THE_REQUEST" "DESTINATION"
-the proxyPassReverse line is important to construct the response.
+In this step, we improve our infrastructure by adding a reverse proxy mechanism. 
+This will allow us to request on both static and dynamic server without breaking the same origin policy. 
+At first, we implemented it with hard-coded address in the `site.conf` file (`/etc/apache2/sitesavailable`). This is not really efficient because we have to make sure that our container will keep the same address all the time. 
+We still can test it with telnet to see in which container the request that we write is redirected. To redirect request in the right server, we've used the `proxy` and `proxy-http` module and we simply wrote the two following lines for each type of request : `ProxyPass "TYPE_OF_THE_REQUEST" "DESTINATION"`, `ProxyPassReverse "TYPE_OF_THE_REQUEST" "DESTINATION"` 
+The proxyPassReverse line is important in order to construct the response. 
 
 ## Step 4 
-In this part, we implemented AJAX request on our static web page. To do so, we used a javascript named animals, that we call every 2 seconds.
-The AJAX query load new data without refreshing the page. This part needs the reverse proxy because we don't want to allow people to contact directly our container with the express code.
-The reverse proxy will keep the same origin policy and will redirect thr ajax query to the express container.
-
+In this part, we implemented AJAX request on our static web page. 
+To do so, we used a script named animals, that we call every 2 seconds. The AJAX query can load new data without refreshing the page. 
+This part needs the reverse proxy because we don't want to allow people to contact directly our container with the express code. 
+The reverse proxy will also keep the same origin policy and will redirect the ajax query to the express container. 
 
 ## Step 5 
-In this step, we've improved the reverse proxy implemented in the third step to mske it a bit less static.
-To do so, we've modified the launch script of the apache-reverse-proxy image to create a dynamic conf files for the reverse proxy.
-This files need two environment variables that we have to add in argument of the run command.
-This two variables are STATIC_ADDRESS and DYNAMIC_ADDRESS and are relate to the ip address of the servers (static and express)
-The dynamic file is generated by a php script.
-At the end of this step, we have a reverse proxy that work for any ip address of container.
+In this step, we improved the reverse proxy implemented in the third step to make it a bit less static. 
+To do so, we modified the launch script of the apache-reverse-proxy image to create a dynamic conf file for the reverse proxy. 
+This file need two environments variables that we have to add in argument of the run command for the reverse proxy. 
+This two variables are `STATIC_ADDRESS` and `DYNAMIC_ADDRESS` and are related to the ip address of the servers (static and express). 
+The dynamic file is generated by a php script. 
+At the end of this step, we have a reverse proxy that work for any ip address of container. 
 
 ## Additional steps 
-
 ### Load balancing 
-To implements load balancing in our infrastructure, we decided to use nginx, because this technologie is often used in reverse proxy and we wanted to learn it.
-We also used the docker-compose command to run multiple container without passing each ip address in parameter of our reverse proxy.
-We constructed a docker image from nginx:latest and we replaced the default.conf with our own default.conf file to manage the load balancing.
+To implement load balancing in our infrastructure, we decided to use nginx, because this technology is often used in reverse proxy and we wanted to learn it. 
+We also used the docker-compose command to run multiple container without passing each ip address in parameter of our reverse proxy. 
+We constructed a docker image from `nginx:latest` and we replaced the `default.conf` file with our own `default.conf` file to manage the load balancing. 
 In order to test it, we created multiple instance of our static and dynamic docker images and we launch docker-compose in foreground. 
-In this way, we can easily see in the docker terminal which container is called when a request is done.
+In this way, we can easily see in the docker terminal which container is called when a request is done. 
 
-## Sticky session and round robin 
-This part was pretty simple with nginx, indeed, the round robin is the default method of load balancing, so we didn't have to change anything to make it work.
-For the sticky session part, we simply had to add the line `ip_hash;` before the servers name in an upstream in the nginx.conf file. In this way, the reverse proxy will keep track on the ip that ask the connection an will always redirect one ip to one server.
-To test the sticky session part, we add the line in one of the upstream (for example the dynamic one) and we immediatly see that all ajax request were redirect to the same container, whereas request on static content isn't redirect on the same container.
+### Sticky session and round robin 
+This part was pretty simple with nginx, indeed, the round robin is the default method for load balancing, so we didn't have to change anything to make it work. 
+For the sticky session part, we simply had to add the line `ip_hash;` before the servers names in an upstream in the `nginx.conf` file. In this way, the reverse proxy will keep track on the ip that ask the connection and will always redirect the same ip to the same server. 
+To test the sticky session part, we add the line in one of the upstream (for example the dynamic one) and we immediately see that all ajax request were redirected to the same container, whereas requests on static content aren't always redirect on the same container. 
+
+### Management UI 
+We found the portainer application, which is a light application running in a container which provide a web app to manage docker. It allows the user to do everything from a UI. 
+To install it and to access it, we have to run the image and to map a port on it, after that, we can access it from our browser.
