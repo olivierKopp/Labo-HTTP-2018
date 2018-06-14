@@ -1,0 +1,51 @@
+version: '2'
+
+services:
+    reverse-proxy-nginx:
+        image: reverse-proxy-nginx
+        ports:
+            - 8080:8080
+        restart: always
+    
+    apache-static:
+        depends_on:
+            - reverse-proxy-nginx
+        image: apache-static
+        restart: always
+        
+        
+    apache-static2:
+        depends_on:
+            - reverse-proxy-nginx
+        image: apache-static2
+        restart: always
+        
+    apache-static3:
+        depends_on:
+            - reverse-proxy-nginx
+        image: apache-static3
+        restart: always
+
+    apache-express:
+        depends_on:
+            - reverse-proxy-nginx
+        image: apache-express
+        restart: always
+        ports:
+            - "3000"
+   
+    apache-express2:
+        depends_on:
+            - reverse-proxy-nginx
+        image: apache-express2
+        restart: always
+        ports:
+            - "3000"
+            
+    apache-express3:
+        depends_on:
+            - reverse-proxy-nginx
+        image: apache-express3
+        restart: always
+        ports:
+            - "3000"
